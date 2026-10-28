@@ -7,7 +7,7 @@ import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 
-@Route("")
+@Route(value = "", layout = MainLayout.class)
 public class InicioView extends VerticalLayout {
 
     public InicioView() {

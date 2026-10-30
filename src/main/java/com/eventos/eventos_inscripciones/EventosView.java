@@ -4,15 +4,19 @@ package com.eventos.eventos_inscripciones;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.io.IOException;
 
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.datetimepicker.DateTimePicker;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
@@ -33,11 +37,45 @@ public class EventosView extends VerticalLayout {
 
     public EventosView() {
 
-        // Formulario de registro
+        addClassName("eventos-pagina");
+
+        // Cargar eventos guardados
+
+        try {
+
+            eventos = ArchivoEventos.cargarEventos();
+
+            for (Evento evento : eventos) {
+
+                if (evento.getId() >= siguienteId) {
+                    siguienteId = evento.getId() + 1;
+                }
+            }
+
+        } catch (IOException e) {
+
+            Notification.show("Error al cargar los eventos.");
+        }
+
+        // Encabezado
 
         H2 titulo = new H2("Gestión de eventos");
+        titulo.addClassName("titulo-pagina");
+
+        Paragraph subtitulo = new Paragraph(
+            "Administra, organiza y consulta los eventos de la plataforma."
+        );
+        subtitulo.addClassName("subtitulo-pagina");
+
+        VerticalLayout encabezado = new VerticalLayout(titulo, subtitulo);
+        encabezado.setPadding(false);
+        encabezado.setSpacing(false);
+        encabezado.addClassName("encabezado-eventos");
+
+        // Formulario
 
         TextField nombre = new TextField("Nombre del evento");
+        nombre.setPlaceholder("Ej. Feria de tecnología");
         nombre.setWidthFull();
 
         ComboBox<String> categoria = new ComboBox<>("Categoría");
@@ -48,31 +86,40 @@ public class EventosView extends VerticalLayout {
             "Social",
             "Tecnológico"
         );
+        categoria.setPlaceholder("Selecciona una categoría");
         categoria.setWidthFull();
 
         DateTimePicker fechaHora = new DateTimePicker("Fecha y hora");
         fechaHora.setWidthFull();
 
         TextField lugar = new TextField("Lugar");
+        lugar.setPlaceholder("Ej. Auditorio principal");
         lugar.setWidthFull();
 
         IntegerField capacidad = new IntegerField("Capacidad");
         capacidad.setMin(1);
         capacidad.setStepButtonsVisible(true);
+        capacidad.setPlaceholder("Número de asistentes");
         capacidad.setWidthFull();
 
         TextArea descripcion = new TextArea("Descripción");
+        descripcion.setPlaceholder("Describe brevemente el evento...");
         descripcion.setWidthFull();
-        descripcion.setMinHeight("100px");
+        descripcion.setMinHeight("90px");
 
         Button guardar = new Button("Registrar evento");
+        guardar.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        guardar.addClassName("boton-principal");
 
-        // Botones para actualizar y eliminar
+        // Botones de edición
 
         Button editar = new Button("Editar seleccionado");
-        Button actualizar = new Button("Actualizar cambios");
+        Button actualizar = new Button("Guardar cambios");
         Button cancelar = new Button("Cancelar edición");
         Button eliminar = new Button("Eliminar seleccionado");
+
+        actualizar.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        eliminar.addThemeVariants(ButtonVariant.LUMO_ERROR);
 
         editar.setEnabled(false);
         actualizar.setEnabled(false);
@@ -83,12 +130,76 @@ public class EventosView extends VerticalLayout {
             editar, actualizar, cancelar, eliminar
         );
 
-        // Formulario de búsqueda
+        botonesEdicion.setWidthFull();
+        botonesEdicion.addClassName("botones-edicion");
 
-        H2 tituloBusqueda = new H2("Buscar eventos");
+        // Tarjeta del formulario
+
+        H2 tituloFormulario = new H2("Registrar un evento");
+        tituloFormulario.addClassName("titulo-seccion");
+
+        Paragraph ayudaFormulario = new Paragraph(
+            "Completa los datos para crear un nuevo evento."
+        );
+        ayudaFormulario.addClassName("texto-ayuda");
+
+        HorizontalLayout fila1 = new HorizontalLayout(nombre, categoria);
+        fila1.setWidthFull();
+        fila1.setFlexGrow(1, nombre);
+        fila1.setFlexGrow(1, categoria);
+
+        HorizontalLayout fila2 = new HorizontalLayout(fechaHora, lugar);
+        fila2.setWidthFull();
+        fila2.setFlexGrow(1, fechaHora);
+        fila2.setFlexGrow(1, lugar);
+
+        HorizontalLayout fila3 = new HorizontalLayout(capacidad, descripcion);
+        fila3.setWidthFull();
+        fila3.setFlexGrow(1, capacidad);
+        fila3.setFlexGrow(2, descripcion);
+
+        VerticalLayout tarjetaFormulario = new VerticalLayout(
+            tituloFormulario,
+            ayudaFormulario,
+            fila1,
+            fila2,
+            fila3,
+            guardar,
+            botonesEdicion
+        );
+
+        tarjetaFormulario.addClassName("tarjeta-eventos");
+        tarjetaFormulario.setWidthFull();
+        tarjetaFormulario.setPadding(true);
+        tarjetaFormulario.setSpacing(true);
+
+        // Tabla de eventos registrados
+
+        configurarTabla(tablaRegistrados);
+        tablaRegistrados.setItems(eventos);
+
+        H2 tituloRegistrados = new H2("Eventos registrados");
+        tituloRegistrados.addClassName("titulo-seccion");
+
+        Paragraph ayudaRegistrados = new Paragraph(
+            "Selecciona un evento para editarlo o eliminarlo."
+        );
+        ayudaRegistrados.addClassName("texto-ayuda");
+
+        VerticalLayout tarjetaRegistrados = new VerticalLayout(
+            tituloRegistrados,
+            ayudaRegistrados,
+            tablaRegistrados
+        );
+
+        tarjetaRegistrados.addClassName("tarjeta-eventos");
+        tarjetaRegistrados.setWidthFull();
+        tarjetaRegistrados.setPadding(true);
+
+        // Búsqueda
 
         TextField buscarNombre = new TextField("Nombre del evento");
-        buscarNombre.setPlaceholder("Escribe el nombre que deseas buscar...");
+        buscarNombre.setPlaceholder("Escribe el nombre...");
         buscarNombre.setClearButtonVisible(true);
         buscarNombre.setWidthFull();
 
@@ -104,13 +215,43 @@ public class EventosView extends VerticalLayout {
         filtroCategoria.setClearButtonVisible(true);
         filtroCategoria.setWidthFull();
 
-        Button buscarEventos = new Button("Buscar eventos");
+        Button buscarEventos = new Button("Buscar");
+        buscarEventos.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+
         Button mostrarTodos = new Button("Mostrar todos");
 
-        // Configurar las tablas
+        HorizontalLayout filaBusqueda = new HorizontalLayout(
+            buscarNombre,
+            filtroCategoria,
+            buscarEventos,
+            mostrarTodos
+        );
 
-        configurarTabla(tablaRegistrados);
+        filaBusqueda.setWidthFull();
+        filaBusqueda.setAlignItems(FlexComponent.Alignment.END);
+        filaBusqueda.setFlexGrow(1, buscarNombre);
+        filaBusqueda.setFlexGrow(1, filtroCategoria);
+
+        // Tabla de resultados
+
         configurarTabla(tablaResultados);
+
+        H2 tituloResultados = new H2("Resultados de búsqueda");
+        tituloResultados.addClassName("titulo-seccion");
+
+        VerticalLayout tarjetaBusqueda = new VerticalLayout(
+            new H2("Buscar eventos"),
+            new Paragraph(
+                "Filtra los eventos por su nombre o categoría."
+            ),
+            filaBusqueda,
+            tituloResultados,
+            tablaResultados
+        );
+
+        tarjetaBusqueda.addClassName("tarjeta-eventos");
+        tarjetaBusqueda.setWidthFull();
+        tarjetaBusqueda.setPadding(true);
 
         // Registrar evento
 
@@ -144,7 +285,20 @@ public class EventosView extends VerticalLayout {
             eventos.add(nuevoEvento);
             siguienteId++;
 
-            tablaRegistrados.setItems(eventos);
+            try {
+
+                ArchivoEventos.guardarEventos(eventos);
+
+            } catch (IOException e) {
+
+                eventos.remove(nuevoEvento);
+                siguienteId--;
+
+                Notification.show("Error al guardar el evento.");
+                return;
+            }
+
+            tablaRegistrados.setItems(new ArrayList<>(eventos));
 
             if (busquedaRealizada) {
                 actualizarResultados(buscarNombre, filtroCategoria);
@@ -156,10 +310,9 @@ public class EventosView extends VerticalLayout {
             );
 
             Notification.show("Evento registrado correctamente.");
-
         });
 
-        // Seleccionar un evento de la tabla
+        // Seleccionar evento
 
         tablaRegistrados.asSingleSelect().addValueChangeListener(event -> {
 
@@ -170,7 +323,7 @@ public class EventosView extends VerticalLayout {
 
         });
 
-        // Cargar los datos del evento en el formulario
+        // Cargar datos para editar
 
         editar.addClickListener(event -> {
 
@@ -193,12 +346,10 @@ public class EventosView extends VerticalLayout {
                 cancelar.setEnabled(true);
 
                 Notification.show("Puedes modificar los datos del evento.");
-
             }
-
         });
 
-        // Guardar los cambios del evento
+        // Actualizar evento
 
         actualizar.addClickListener(event -> {
 
@@ -224,12 +375,36 @@ public class EventosView extends VerticalLayout {
                 return;
             }
 
+            String nombreAnterior = seleccionado.getNombre();
+            String categoriaAnterior = seleccionado.getCategoria();
+            java.time.LocalDateTime fechaAnterior = seleccionado.getFechaHora();
+            String lugarAnterior = seleccionado.getLugar();
+            int capacidadAnterior = seleccionado.getCapacidad();
+            String descripcionAnterior = seleccionado.getDescripcion();
+
             seleccionado.setNombre(nombre.getValue());
             seleccionado.setCategoria(categoria.getValue());
             seleccionado.setFechaHora(fechaHora.getValue());
             seleccionado.setLugar(lugar.getValue());
             seleccionado.setCapacidad(capacidad.getValue());
             seleccionado.setDescripcion(descripcion.getValue());
+
+            try {
+
+                ArchivoEventos.guardarEventos(eventos);
+
+            } catch (IOException e) {
+
+                seleccionado.setNombre(nombreAnterior);
+                seleccionado.setCategoria(categoriaAnterior);
+                seleccionado.setFechaHora(fechaAnterior);
+                seleccionado.setLugar(lugarAnterior);
+                seleccionado.setCapacidad(capacidadAnterior);
+                seleccionado.setDescripcion(descripcionAnterior);
+
+                Notification.show("Error al actualizar el evento.");
+                return;
+            }
 
             tablaRegistrados.setItems(new ArrayList<>(eventos));
 
@@ -249,10 +424,9 @@ public class EventosView extends VerticalLayout {
             cancelar.setEnabled(false);
 
             Notification.show("Evento actualizado correctamente.");
-
         });
 
-        // Cancelar la edición
+        // Cancelar edición
 
         cancelar.addClickListener(event -> {
 
@@ -268,10 +442,9 @@ public class EventosView extends VerticalLayout {
             cancelar.setEnabled(false);
 
             Notification.show("Edición cancelada.");
-
         });
 
-        // Eliminar evento con confirmación
+        // Eliminar con confirmación
 
         eliminar.addClickListener(event -> {
 
@@ -298,6 +471,20 @@ public class EventosView extends VerticalLayout {
 
                 eventos.remove(seleccionado);
 
+                try {
+
+                    ArchivoEventos.guardarEventos(eventos);
+
+                } catch (IOException ex) {
+
+                    eventos.add(seleccionado);
+
+                    tablaRegistrados.setItems(new ArrayList<>(eventos));
+
+                    Notification.show("Error al eliminar el evento.");
+                    return;
+                }
+
                 tablaRegistrados.setItems(new ArrayList<>(eventos));
 
                 if (busquedaRealizada) {
@@ -307,11 +494,9 @@ public class EventosView extends VerticalLayout {
                 tablaRegistrados.asSingleSelect().clear();
 
                 Notification.show("Evento eliminado correctamente.");
-
             });
 
             confirmacion.open();
-
         });
 
         // Buscar eventos
@@ -327,10 +512,9 @@ public class EventosView extends VerticalLayout {
             } else {
                 Notification.show("Búsqueda realizada correctamente.");
             }
-
         });
 
-        // Mostrar todos los eventos en la segunda tabla
+        // Mostrar todos los eventos
 
         mostrarTodos.addClickListener(event -> {
 
@@ -342,41 +526,25 @@ public class EventosView extends VerticalLayout {
             tablaResultados.setItems(new ArrayList<>(eventos));
 
             Notification.show("Mostrando todos los eventos.");
-
         });
 
-        // Organización de la pantalla
+        // Agregar componentes a la página
 
         add(
-            titulo,
-            nombre,
-            categoria,
-            fechaHora,
-            lugar,
-            capacidad,
-            descripcion,
-            guardar,
-
-            new H2("Eventos registrados"),
-            tablaRegistrados,
-            botonesEdicion,
-
-            tituloBusqueda,
-            buscarNombre,
-            filtroCategoria,
-            buscarEventos,
-            mostrarTodos,
-
-            new H2("Resultados de búsqueda"),
-            tablaResultados
+            encabezado,
+            tarjetaFormulario,
+            tarjetaRegistrados,
+            tarjetaBusqueda
         );
 
-        setSpacing(true);
-        setPadding(true);
         setWidthFull();
+        setMaxWidth("1500px");
+        getStyle().set("margin", "0 auto");
+        setPadding(true);
+        setSpacing(true);
     }
 
-    // Configurar las columnas de las tablas
+    // Configurar columnas de las tablas
 
     private void configurarTabla(Grid<Evento> tabla) {
 
@@ -385,16 +553,20 @@ public class EventosView extends VerticalLayout {
                 .setAutoWidth(true);
 
         tabla.addColumn(Evento::getNombre)
-                .setHeader("Nombre");
+                .setHeader("Nombre")
+                .setAutoWidth(true);
 
         tabla.addColumn(Evento::getCategoria)
-                .setHeader("Categoría");
+                .setHeader("Categoría")
+                .setAutoWidth(true);
 
         tabla.addColumn(Evento::getFechaHora)
-                .setHeader("Fecha y hora");
+                .setHeader("Fecha y hora")
+                .setAutoWidth(true);
 
         tabla.addColumn(Evento::getLugar)
-                .setHeader("Lugar");
+                .setHeader("Lugar")
+                .setAutoWidth(true);
 
         tabla.addColumn(Evento::getCapacidad)
                 .setHeader("Capacidad")
@@ -409,7 +581,7 @@ public class EventosView extends VerticalLayout {
         tabla.setWidthFull();
     }
 
-    // Actualizar los resultados de búsqueda
+    // Actualizar resultados de búsqueda
 
     private void actualizarResultados(
             TextField buscarNombre,
@@ -438,7 +610,7 @@ public class EventosView extends VerticalLayout {
         tablaResultados.setItems(resultados);
     }
 
-    // Limpiar los campos del formulario
+    // Limpiar formulario
 
     private void limpiarFormulario(
             TextField nombre,

@@ -76,4 +76,15 @@ public class Evento {
     public void setDescripcion(String descripcion) {
         this.descripcion = descripcion;
     }
+
+    public String getEstado(int cantidadInscritos) {
+
+    if (fechaHora.isBefore(LocalDateTime.now())) {
+        return "Finalizado";
+        } else if (cantidadInscritos >= capacidad) {
+            return "Lleno";
+        } else {
+            return "Abierto";
+        }
+    }
 }

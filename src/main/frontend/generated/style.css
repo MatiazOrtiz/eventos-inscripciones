@@ -1,0 +1,104 @@
+
+/* Fondo general de la página */
+
+.eventos-pagina {
+    box-sizing: border-box;
+    padding: 30px;
+    gap: 24px;
+    background-color: var(--lumo-contrast-5pct);
+}
+
+/* Encabezado */
+
+.encabezado-eventos {
+    padding: 0;
+    margin-bottom: 4px;
+}
+
+.titulo-pagina {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--lumo-primary-text-color);
+}
+
+.subtitulo-pagina {
+    margin: 8px 0 0;
+    color: var(--lumo-secondary-text-color);
+    font-size: var(--lumo-font-size-m);
+}
+
+/* Tarjetas */
+
+.tarjeta-eventos {
+    box-sizing: border-box;
+    background-color: var(--lumo-base-color);
+    border: 1px solid var(--lumo-contrast-10pct);
+    border-radius: 14px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.04);
+    padding: 24px;
+    gap: 16px;
+}
+
+/* Títulos de las secciones */
+
+.titulo-seccion {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 650;
+}
+
+.texto-ayuda {
+    margin: -8px 0 4px;
+    color: var(--lumo-secondary-text-color);
+    font-size: var(--lumo-font-size-s);
+}
+
+/* Botón principal */
+
+.boton-principal {
+    align-self: flex-start;
+    margin-top: 4px;
+}
+
+/* Botones de edición */
+
+.botones-edicion {
+    padding-top: 12px;
+    border-top: 1px solid var(--lumo-contrast-10pct);
+}
+
+/* Espacio entre las filas del formulario */
+
+.eventos-pagina vaadin-horizontal-layout {
+    gap: 18px;
+}
+
+/* Tablas */
+
+.eventos-pagina vaadin-grid {
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* Pantallas pequeñas */
+
+@media (max-width: 700px) {
+
+    .eventos-pagina {
+        padding: 14px;
+        gap: 16px;
+    }
+
+    .tarjeta-eventos {
+        padding: 16px;
+    }
+
+    .titulo-pagina {
+        font-size: 1.6rem;
+    }
+
+    .botones-edicion {
+        flex-wrap: wrap;
+    }
+}

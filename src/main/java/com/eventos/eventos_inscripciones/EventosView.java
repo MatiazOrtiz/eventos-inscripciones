@@ -15,6 +15,7 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -571,6 +572,43 @@ public class EventosView extends VerticalLayout {
         tabla.addColumn(Evento::getCapacidad)
                 .setHeader("Capacidad")
                 .setAutoWidth(true);
+
+        // Estado con indicador de color
+
+        tabla.addComponentColumn(evento -> {
+
+            String estado = evento.getEstado(0);
+
+            Span etiqueta = new Span("● " + estado);
+
+            etiqueta.getStyle()
+                    .set("padding", "5px 12px")
+                    .set("border-radius", "20px")
+                    .set("font-size", "13px")
+                    .set("font-weight", "bold");
+
+            if (estado.equals("Abierto")) {
+
+                etiqueta.getStyle()
+                        .set("background-color", "#dcfce7")
+                        .set("color", "#15803d");
+
+            } else if (estado.equals("Finalizado")) {
+
+                etiqueta.getStyle()
+                        .set("background-color", "#e5e7eb")
+                        .set("color", "#4b5563");
+
+            } else {
+
+                etiqueta.getStyle()
+                        .set("background-color", "#ffedd5")
+                        .set("color", "#c2410c");
+            }
+
+            return etiqueta;
+
+        }).setHeader("Estado").setAutoWidth(true);
 
         tabla.addColumn(Evento::getDescripcion)
                 .setHeader("Descripción");

@@ -19,6 +19,8 @@ public class MainLayout extends AppLayout {
         menu.addItem(new SideNavItem("Actividades", ActividadesView.class));
         menu.addItem(new SideNavItem("Inscripciones", InscripcionesView.class));
         menu.addItem(new SideNavItem("Asistencias", AsistenciasView.class));
+        menu.addItem(new SideNavItem("Estadísticas", EstadisticasView.class));
+        menu.addItem(new SideNavItem("Certificados", CertificadosView.class));
 
         VerticalLayout contenido = new VerticalLayout(titulo, menu);
 

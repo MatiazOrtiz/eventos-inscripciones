@@ -20,6 +20,7 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.progressbar.ProgressBar;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
@@ -29,6 +30,7 @@ import com.vaadin.flow.router.Route;
 public class EventosView extends VerticalLayout {
 
     private List<Evento> eventos = new ArrayList<>();
+    private List<Inscripcion> inscripciones = new ArrayList<>();
 
     private Grid<Evento> tablaRegistrados = new Grid<>(Evento.class, false);
     private Grid<Evento> tablaResultados = new Grid<>(Evento.class, false);
@@ -45,6 +47,7 @@ public class EventosView extends VerticalLayout {
         try {
 
             eventos = ArchivoEventos.cargarEventos();
+            inscripciones = ArchivoInscripciones.cargarInscripciones();
 
             for (Evento evento : eventos) {
 
@@ -55,7 +58,7 @@ public class EventosView extends VerticalLayout {
 
         } catch (IOException e) {
 
-            Notification.show("Error al cargar los eventos.");
+            Notification.show("Error al cargar los eventos o inscripciones.");
         }
 
         // Encabezado
@@ -573,11 +576,47 @@ public class EventosView extends VerticalLayout {
                 .setHeader("Capacidad")
                 .setAutoWidth(true);
 
+        // Barra de progreso de ocupación
+
+        tabla.addComponentColumn(evento -> {
+
+            int cantidad = contarInscritos(evento);
+
+            double porcentaje = 0;
+
+            if (evento.getCapacidad() > 0) {
+                porcentaje = cantidad * 1.0 / evento.getCapacidad();
+            }
+
+            ProgressBar barra = new ProgressBar();
+
+            barra.setMin(0);
+            barra.setMax(1);
+            barra.setValue(Math.min(porcentaje, 1));
+            barra.setWidth("150px");
+
+            Span texto = new Span(
+                cantidad + " de " + evento.getCapacidad()
+                    + " (" + Math.round(porcentaje * 100) + "%)"
+            );
+
+            VerticalLayout ocupacion = new VerticalLayout(
+                barra,
+                texto
+            );
+
+            ocupacion.setPadding(false);
+            ocupacion.setSpacing(false);
+
+            return ocupacion;
+
+        }).setHeader("Ocupación").setAutoWidth(true);
+
         // Estado con indicador de color
 
         tabla.addComponentColumn(evento -> {
 
-            String estado = evento.getEstado(0);
+            String estado = evento.getEstado(contarInscritos(evento));
 
             Span etiqueta = new Span("● " + estado);
 
@@ -617,6 +656,24 @@ public class EventosView extends VerticalLayout {
 
         tabla.setAllRowsVisible(true);
         tabla.setWidthFull();
+    }
+
+    // Contar participantes inscritos en un evento
+
+    private int contarInscritos(Evento evento) {
+
+        int cantidad = 0;
+
+        for (Inscripcion inscripcion : inscripciones) {
+
+            if (inscripcion.getIdEvento() == evento.getId()
+                    && inscripcion.getEstado().equals("Inscrito")) {
+
+                cantidad++;
+            }
+        }
+
+        return cantidad;
     }
 
     // Actualizar resultados de búsqueda

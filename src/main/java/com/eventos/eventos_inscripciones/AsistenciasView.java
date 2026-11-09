@@ -2,8 +2,8 @@
 package com.eventos.eventos_inscripciones;
 
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.CheckboxGroup;
 import com.vaadin.flow.component.combobox.ComboBox;
-import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.notification.Notification;
@@ -13,7 +13,9 @@ import com.vaadin.flow.router.Route;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Route(value = "asistencias", layout = MainLayout.class)
 public class AsistenciasView extends VerticalLayout {
@@ -25,16 +27,14 @@ public class AsistenciasView extends VerticalLayout {
 
     private ComboBox<Evento> eventoCombo = new ComboBox<>("Evento");
     private ComboBox<Actividad> actividadCombo = new ComboBox<>("Actividad");
-    private ComboBox<Inscripcion> participanteCombo = new ComboBox<>("Participante");
 
-    private Checkbox asistioCheck = new Checkbox("El participante asistió");
+    private CheckboxGroup<Inscripcion> participantesGrupo =
+            new CheckboxGroup<>();
 
-    private Button guardarButton = new Button("Registrar asistencia");
-    private Button cancelarButton = new Button("Cancelar edición");
+    private Button guardarButton = new Button("Guardar asistencias");
+    private Button cancelarButton = new Button("Limpiar selección");
 
     private Grid<Asistencia> tabla = new Grid<>(Asistencia.class, false);
-
-    private Asistencia asistenciaSeleccionada = null;
 
     public AsistenciasView() {
 
@@ -47,8 +47,11 @@ public class AsistenciasView extends VerticalLayout {
         eventoCombo.setItemLabelGenerator(Evento::getNombre);
         actividadCombo.setItemLabelGenerator(Actividad::getNombre);
 
-        participanteCombo.setItemLabelGenerator(
-            inscripcion -> inscripcion.getNombre() + " - " + inscripcion.getDocumento()
+        participantesGrupo.setLabel("Selecciona los participantes que asistieron");
+
+        participantesGrupo.setItemLabelGenerator(
+                inscripcion -> inscripcion.getNombre()
+                        + " - " + inscripcion.getDocumento()
         );
 
         eventoCombo.setItems(eventos);
@@ -58,48 +61,47 @@ public class AsistenciasView extends VerticalLayout {
             Evento seleccionado = event.getValue();
 
             actividadCombo.clear();
-            participanteCombo.clear();
+            participantesGrupo.clear();
+            participantesGrupo.setItems(new ArrayList<>());
 
             if (seleccionado != null) {
 
                 List<Actividad> actividadesEvento = new ArrayList<>();
-                List<Inscripcion> participantesEvento = new ArrayList<>();
 
                 for (Actividad actividad : actividades) {
+
                     if (actividad.getIdEvento() == seleccionado.getId()) {
                         actividadesEvento.add(actividad);
                     }
                 }
 
-                for (Inscripcion inscripcion : inscripciones) {
-                    if (inscripcion.getIdEvento() == seleccionado.getId()
-                            && inscripcion.getEstado().equals("Inscrito")) {
-                        participantesEvento.add(inscripcion);
-                    }
-                }
-
                 actividadCombo.setItems(actividadesEvento);
-                participanteCombo.setItems(participantesEvento);
             }
         });
 
-        guardarButton.addClickListener(event -> guardarAsistencia());
+        actividadCombo.addValueChangeListener(event -> {
+
+            cargarParticipantesActividad(event.getValue());
+
+        });
+
+        guardarButton.addClickListener(event -> guardarAsistencias());
 
         cancelarButton.addClickListener(event -> limpiarFormulario());
 
         configurarTabla();
 
         HorizontalLayout botones = new HorizontalLayout(
-            guardarButton, cancelarButton
+                guardarButton,
+                cancelarButton
         );
 
         add(
-            eventoCombo,
-            actividadCombo,
-            participanteCombo,
-            asistioCheck,
-            botones,
-            tabla
+                eventoCombo,
+                actividadCombo,
+                participantesGrupo,
+                botones,
+                tabla
         );
 
         actualizarTabla();
@@ -108,91 +110,167 @@ public class AsistenciasView extends VerticalLayout {
     private void cargarDatos() {
 
         try {
+
             eventos = ArchivoEventos.cargarEventos();
             actividades = ArchivoActividades.cargarActividades();
             inscripciones = ArchivoInscripciones.cargarInscripciones();
             asistencias = ArchivoAsistencias.cargarAsistencias();
 
         } catch (IOException e) {
+
             Notification.show("Error al cargar los datos");
         }
     }
 
-    private void guardarAsistencia() {
+    private void cargarParticipantesActividad(Actividad actividad) {
 
-        Evento evento = eventoCombo.getValue();
-        Actividad actividad = actividadCombo.getValue();
-        Inscripcion participante = participanteCombo.getValue();
+        participantesGrupo.clear();
 
-        if (evento == null || actividad == null || participante == null) {
-            Notification.show("Selecciona el evento, la actividad y el participante");
+        if (actividad == null) {
+            participantesGrupo.setItems(new ArrayList<>());
             return;
         }
 
-        Asistencia asistenciaExistente = null;
+        List<Inscripcion> participantesEvento = new ArrayList<>();
+
+        for (Inscripcion inscripcion : inscripciones) {
+
+            if (inscripcion.getIdEvento() == actividad.getIdEvento()
+                    && inscripcion.getEstado().equals("Inscrito")) {
+
+                participantesEvento.add(inscripcion);
+            }
+        }
+
+        participantesGrupo.setItems(participantesEvento);
+
+        Set<Inscripcion> presentes = new HashSet<>();
 
         for (Asistencia asistencia : asistencias) {
 
             if (asistencia.getIdActividad() == actividad.getId()
-                    && asistencia.getIdInscripcion() == participante.getId()) {
+                    && asistencia.isAsistio()) {
 
-                asistenciaExistente = asistencia;
-                break;
+                for (Inscripcion inscripcion : participantesEvento) {
+
+                    if (inscripcion.getId() == asistencia.getIdInscripcion()) {
+                        presentes.add(inscripcion);
+                    }
+                }
             }
         }
 
-        if (asistenciaExistente != null) {
+        participantesGrupo.setValue(presentes);
+    }
 
-            asistenciaExistente.setAsistio(asistioCheck.getValue());
+    private void guardarAsistencias() {
 
-        } else {
+        Actividad actividad = actividadCombo.getValue();
 
-            int nuevoId = 1;
+        if (eventoCombo.getValue() == null || actividad == null) {
 
-            for (Asistencia asistencia : asistencias) {
-                if (asistencia.getId() >= nuevoId) {
-                    nuevoId = asistencia.getId() + 1;
+            Notification.show("Selecciona el evento y la actividad");
+            return;
+        }
+
+        Set<Inscripcion> presentes = participantesGrupo.getValue();
+
+        if (presentes == null) {
+            presentes = new HashSet<>();
+        }
+
+        List<Asistencia> copiaAnterior = new ArrayList<>();
+
+        for (Asistencia asistencia : asistencias) {
+
+            copiaAnterior.add(
+                    new Asistencia(
+                            asistencia.getId(),
+                            asistencia.getIdActividad(),
+                            asistencia.getIdInscripcion(),
+                            asistencia.isAsistio()
+                    )
+            );
+        }
+
+        for (Inscripcion participante : inscripciones) {
+
+            if (participante.getIdEvento() == actividad.getIdEvento()
+                    && participante.getEstado().equals("Inscrito")) {
+
+                boolean asistio = presentes.contains(participante);
+
+                Asistencia asistenciaEncontrada = null;
+
+                for (Asistencia asistencia : asistencias) {
+
+                    if (asistencia.getIdActividad() == actividad.getId()
+                            && asistencia.getIdInscripcion() == participante.getId()) {
+
+                        asistenciaEncontrada = asistencia;
+                        break;
+                    }
+                }
+
+                if (asistenciaEncontrada != null) {
+
+                    asistenciaEncontrada.setAsistio(asistio);
+
+                } else {
+
+                    int nuevoId = 1;
+
+                    for (Asistencia asistencia : asistencias) {
+
+                        if (asistencia.getId() >= nuevoId) {
+                            nuevoId = asistencia.getId() + 1;
+                        }
+                    }
+
+                    Asistencia nuevaAsistencia = new Asistencia(
+                            nuevoId,
+                            actividad.getId(),
+                            participante.getId(),
+                            asistio
+                    );
+
+                    asistencias.add(nuevaAsistencia);
                 }
             }
-
-            Asistencia nuevaAsistencia = new Asistencia(
-                nuevoId,
-                actividad.getId(),
-                participante.getId(),
-                asistioCheck.getValue()
-            );
-
-            asistencias.add(nuevaAsistencia);
         }
 
         try {
 
             ArchivoAsistencias.guardarAsistencias(asistencias);
 
-            Notification.show("Asistencia guardada correctamente");
+            Notification.show("Asistencias guardadas correctamente");
 
-            limpiarFormulario();
             actualizarTabla();
+            cargarParticipantesActividad(actividad);
 
         } catch (IOException e) {
-            Notification.show("Error al guardar la asistencia");
+
+            asistencias = copiaAnterior;
+
+            Notification.show("Error al guardar las asistencias");
         }
     }
 
     private void configurarTabla() {
 
-        tabla.addColumn(Asistencia::getId).setHeader("ID");
-
-        tabla.addColumn(asistencia -> buscarNombreActividad(
-            asistencia.getIdActividad()
-        )).setHeader("Actividad");
-
-        tabla.addColumn(asistencia -> buscarNombreParticipante(
-            asistencia.getIdInscripcion()
-        )).setHeader("Participante");
+        tabla.addColumn(Asistencia::getId)
+                .setHeader("ID");
 
         tabla.addColumn(asistencia ->
-            asistencia.isAsistio() ? "Asistió" : "No asistió"
+                buscarNombreActividad(asistencia.getIdActividad())
+        ).setHeader("Actividad");
+
+        tabla.addColumn(asistencia ->
+                buscarNombreParticipante(asistencia.getIdInscripcion())
+        ).setHeader("Participante");
+
+        tabla.addColumn(asistencia ->
+                asistencia.isAsistio() ? "Asistió" : "No asistió"
         ).setHeader("Estado");
 
         tabla.addComponentColumn(asistencia -> {
@@ -214,11 +292,15 @@ public class AsistenciasView extends VerticalLayout {
             return eliminar;
 
         }).setHeader("Eliminar");
+
+        tabla.setWidthFull();
+        tabla.setAllRowsVisible(true);
     }
 
     private String buscarNombreActividad(int id) {
 
         for (Actividad actividad : actividades) {
+
             if (actividad.getId() == id) {
                 return actividad.getNombre();
             }
@@ -230,6 +312,7 @@ public class AsistenciasView extends VerticalLayout {
     private String buscarNombreParticipante(int id) {
 
         for (Inscripcion inscripcion : inscripciones) {
+
             if (inscripcion.getId() == id) {
                 return inscripcion.getNombre();
             }
@@ -241,39 +324,35 @@ public class AsistenciasView extends VerticalLayout {
     private void editarAsistencia(Asistencia asistencia) {
 
         Actividad actividadEncontrada = null;
-        Inscripcion participanteEncontrado = null;
 
         for (Actividad actividad : actividades) {
+
             if (actividad.getId() == asistencia.getIdActividad()) {
                 actividadEncontrada = actividad;
                 break;
             }
         }
 
-        for (Inscripcion inscripcion : inscripciones) {
-            if (inscripcion.getId() == asistencia.getIdInscripcion()) {
-                participanteEncontrado = inscripcion;
-                break;
-            }
-        }
-
-        if (actividadEncontrada != null && participanteEncontrado != null) {
+        if (actividadEncontrada != null) {
 
             for (Evento evento : eventos) {
+
                 if (evento.getId() == actividadEncontrada.getIdEvento()) {
+
                     eventoCombo.setValue(evento);
                     break;
                 }
             }
 
             actividadCombo.setValue(actividadEncontrada);
-            participanteCombo.setValue(participanteEncontrado);
 
-            asistioCheck.setValue(asistencia.isAsistio());
+            cargarParticipantesActividad(actividadEncontrada);
 
-            asistenciaSeleccionada = asistencia;
+            guardarButton.setText("Actualizar asistencias");
 
-            guardarButton.setText("Actualizar asistencia");
+            Notification.show(
+                    "Modifica los participantes que asistieron a esta actividad."
+            );
         }
     }
 
@@ -299,7 +378,14 @@ public class AsistenciasView extends VerticalLayout {
 
                 actualizarTabla();
 
+                if (actividadCombo.getValue() != null) {
+                    cargarParticipantesActividad(actividadCombo.getValue());
+                }
+
             } catch (IOException e) {
+
+                asistencias.add(asistencia);
+
                 Notification.show("Error al eliminar la asistencia");
             }
         });
@@ -311,15 +397,13 @@ public class AsistenciasView extends VerticalLayout {
 
         eventoCombo.clear();
         actividadCombo.clear();
-        participanteCombo.clear();
-        asistioCheck.clear();
+        participantesGrupo.clear();
 
-        asistenciaSeleccionada = null;
-
-        guardarButton.setText("Registrar asistencia");
+        guardarButton.setText("Guardar asistencias");
     }
 
     private void actualizarTabla() {
+
         tabla.setItems(asistencias);
     }
 }

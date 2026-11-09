@@ -11,6 +11,7 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.datetimepicker.DateTimePicker;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.notification.Notification;
@@ -362,25 +363,32 @@ public class ActividadesView extends VerticalLayout {
     private void configurarTabla() {
 
         tabla.addColumn(Actividad::getId)
-                .setHeader("ID");
+                .setHeader("ID")
+                .setAutoWidth(true);
 
         tabla.addColumn(Actividad::getIdEvento)
-                .setHeader("ID Evento");
+                .setHeader("ID Evento")
+                .setAutoWidth(true);
 
         tabla.addColumn(Actividad::getNombre)
-                .setHeader("Nombre");
+                .setHeader("Nombre")
+                .setAutoWidth(true);
 
         tabla.addColumn(Actividad::getFechaInicio)
-                .setHeader("Inicio");
+                .setHeader("Inicio")
+                .setAutoWidth(true);
 
         tabla.addColumn(Actividad::getFechaFin)
-                .setHeader("Finalización");
+                .setHeader("Finalización")
+                .setAutoWidth(true);
 
         tabla.addColumn(Actividad::getDescripcion)
                 .setHeader("Descripción");
 
-        tabla.setWidthFull();
+        tabla.addThemeVariants(GridVariant.LUMO_WRAP_CELL_CONTENT);
+
         tabla.setAllRowsVisible(true);
+        tabla.setWidthFull();
     }
 
     // Comprobar horarios superpuestos

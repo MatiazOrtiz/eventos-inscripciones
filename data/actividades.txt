@@ -1,0 +1,4 @@
+1|1|Calentamiento deportivo|Preparacion de los participantes.|2026-11-22T08:00|2026-11-22T09:00
+2|1|Partido final|Partido final del torneo.|2026-11-22T09:30|2026-11-22T11:00
+3|2|la hora loca|aca todos se aloquean para hacerce mas amiguis|2026-11-28T01:00|2026-11-28T02:00
+4|2|fulvo|jugar un rato fulvo |2026-11-28T07:00|2026-11-28T08:00

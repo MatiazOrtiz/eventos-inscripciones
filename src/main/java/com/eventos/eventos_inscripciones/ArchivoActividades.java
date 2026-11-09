@@ -2,11 +2,10 @@
 package com.eventos.eventos_inscripciones;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,23 +17,24 @@ public class ArchivoActividades {
     public static void guardarActividades(List<Actividad> actividades)
             throws IOException {
 
-        File archivo = new File(RUTA);
+        Path ruta = Path.of(RUTA);
 
-        archivo.getParentFile().mkdirs();
+        Files.createDirectories(ruta.getParent());
 
-        try (PrintWriter escritor = new PrintWriter(new FileWriter(archivo))) {
+        try (BufferedWriter escritor = Files.newBufferedWriter(ruta)) {
 
             for (Actividad actividad : actividades) {
 
-                escritor.println(
+                escritor.write(
                     actividad.getId() + "|" +
                     actividad.getIdEvento() + "|" +
-                    actividad.getNombre().replace("|", "/") + "|" +
-                    actividad.getDescripcion().replace("|", "/")
-                        .replace("\n", " ") + "|" +
+                    limpiarTexto(actividad.getNombre()) + "|" +
+                    limpiarTexto(actividad.getDescripcion()) + "|" +
                     actividad.getFechaInicio() + "|" +
                     actividad.getFechaFin()
                 );
+
+                escritor.newLine();
             }
         }
     }
@@ -44,13 +44,13 @@ public class ArchivoActividades {
 
         List<Actividad> actividades = new ArrayList<>();
 
-        File archivo = new File(RUTA);
+        Path ruta = Path.of(RUTA);
 
-        if (!archivo.exists()) {
+        if (!Files.exists(ruta)) {
             return actividades;
         }
 
-        try (BufferedReader lector = new BufferedReader(new FileReader(archivo))) {
+        try (BufferedReader lector = Files.newBufferedReader(ruta)) {
 
             String linea;
 
@@ -60,20 +60,58 @@ public class ArchivoActividades {
 
                 if (datos.length == 6) {
 
-                    Actividad actividad = new Actividad(
-                        Integer.parseInt(datos[0]),
-                        Integer.parseInt(datos[1]),
-                        datos[2],
-                        datos[3],
-                        LocalDateTime.parse(datos[4]),
-                        LocalDateTime.parse(datos[5])
-                    );
+                    try {
 
-                    actividades.add(actividad);
+                        int id = Integer.parseInt(datos[0]);
+                        int idEvento = Integer.parseInt(datos[1]);
+
+                        String nombre = datos[2];
+                        String descripcion = datos[3];
+
+                        LocalDateTime fechaInicio =
+                                LocalDateTime.parse(datos[4]);
+
+                        LocalDateTime fechaFin =
+                                LocalDateTime.parse(datos[5]);
+
+                        Actividad actividad = new Actividad(
+                            id,
+                            idEvento,
+                            nombre,
+                            descripcion,
+                            fechaInicio,
+                            fechaFin
+                        );
+
+                        actividades.add(actividad);
+
+                    } catch (NumberFormatException e) {
+
+                        System.out.println("Error en los números de una actividad.");
+
+                    } catch (java.time.format.DateTimeParseException e) {
+
+                        System.out.println("Error en las fechas de una actividad.");
+                    }
+
+                } else {
+
+                    System.out.println("Una línea de actividades tiene datos incorrectos.");
                 }
             }
         }
 
         return actividades;
+    }
+
+    private static String limpiarTexto(String texto) {
+
+        if (texto == null) {
+            return "";
+        }
+
+        return texto.replace("|", "/")
+                    .replace("\n", " ")
+                    .replace("\r", " ");
     }
 }

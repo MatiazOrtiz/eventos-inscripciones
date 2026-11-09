@@ -1,11 +1,10 @@
-
 package com.eventos.eventos_inscripciones;
 
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.router.Route;
 
 import java.io.IOException;
@@ -16,7 +15,11 @@ public class EstadisticasView extends VerticalLayout {
 
     public EstadisticasView() {
 
-        setSizeFull();
+        addClassName("eventos-pagina");
+
+        setWidthFull();
+        setMaxWidth("1500px");
+        getStyle().set("margin", "0 auto");
         setPadding(true);
         setSpacing(true);
 
@@ -63,17 +66,35 @@ public class EstadisticasView extends VerticalLayout {
                     String.format("%.2f%%", porcentaje)
             );
 
-            HorizontalLayout fila1 = new HorizontalLayout(
+            textoPorcentaje.getStyle()
+                    .set("font-size", "32px")
+                    .set("font-weight", "bold");
+
+            // Primera fila de tarjetas
+
+            FlexLayout fila1 = new FlexLayout(
                     crearTarjeta("Total de eventos", eventos.size()),
                     crearTarjeta("Total de actividades", actividades.size()),
                     crearTarjeta("Participantes inscritos", inscritos)
             );
 
-            HorizontalLayout fila2 = new HorizontalLayout(
+            fila1.setWidthFull();
+            fila1.setFlexWrap(FlexLayout.FlexWrap.WRAP);
+            fila1.addClassName("fila-responsive");
+
+            // Segunda fila de tarjetas
+
+            FlexLayout fila2 = new FlexLayout(
                     crearTarjeta("Personas en espera", enEspera),
                     crearTarjeta("Asistencias", presentes),
                     crearTarjeta("Ausencias", ausentes)
             );
+
+            fila2.setWidthFull();
+            fila2.setFlexWrap(FlexLayout.FlexWrap.WRAP);
+            fila2.addClassName("fila-responsive");
+
+            // Tarjeta del porcentaje
 
             VerticalLayout tarjetaPorcentaje = new VerticalLayout(
                     new H3("Porcentaje de asistencia"),
@@ -81,9 +102,11 @@ public class EstadisticasView extends VerticalLayout {
             );
 
             tarjetaPorcentaje.addClassName("tarjeta-eventos");
+            tarjetaPorcentaje.setWidthFull();
+            tarjetaPorcentaje.setMaxWidth("400px");
+            tarjetaPorcentaje.setPadding(true);
 
-            fila1.setWidthFull();
-            fila2.setWidthFull();
+            // Agregar componentes
 
             add(titulo, fila1, fila2, tarjetaPorcentaje);
 
@@ -92,6 +115,8 @@ public class EstadisticasView extends VerticalLayout {
             add(new Span("Error al cargar las estadísticas: " + e.getMessage()));
         }
     }
+
+    // Crear tarjeta de estadística
 
     private VerticalLayout crearTarjeta(String titulo, int cantidad) {
 
@@ -102,6 +127,8 @@ public class EstadisticasView extends VerticalLayout {
 
         tarjeta.addClassName("tarjeta-eventos");
         tarjeta.setWidth("250px");
+        tarjeta.setMaxWidth("100%");
+        tarjeta.setFlexGrow(1);
 
         return tarjeta;
     }

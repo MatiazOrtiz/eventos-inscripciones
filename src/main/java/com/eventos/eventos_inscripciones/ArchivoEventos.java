@@ -2,8 +2,8 @@
 package com.eventos.eventos_inscripciones;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -14,20 +14,17 @@ public class ArchivoEventos {
 
     private static final String RUTA = "data/eventos.txt";
 
-    // Guardar eventos en el archivo
-
     public static void guardarEventos(List<Evento> eventos) throws IOException {
 
         Path ruta = Path.of(RUTA);
 
         Files.createDirectories(ruta.getParent());
 
-        try (PrintWriter escritor = new PrintWriter(
-                Files.newBufferedWriter(ruta))) {
+        try (BufferedWriter escritor = Files.newBufferedWriter(ruta)) {
 
             for (Evento evento : eventos) {
 
-                escritor.println(
+                escritor.write(
                     evento.getId() + "|" +
                     limpiarTexto(evento.getNombre()) + "|" +
                     limpiarTexto(evento.getCategoria()) + "|" +
@@ -36,11 +33,11 @@ public class ArchivoEventos {
                     evento.getCapacidad() + "|" +
                     limpiarTexto(evento.getDescripcion())
                 );
+
+                escritor.newLine();
             }
         }
     }
-
-    // Leer eventos del archivo
 
     public static List<Evento> cargarEventos() throws IOException {
 
@@ -67,40 +64,37 @@ public class ArchivoEventos {
                         int id = Integer.parseInt(datos[0]);
                         String nombre = datos[1];
                         String categoria = datos[2];
-                        LocalDateTime fechaHora = LocalDateTime.parse(datos[3]);
+                        LocalDateTime fechaHora =
+                                LocalDateTime.parse(datos[3]);
                         String lugar = datos[4];
                         int capacidad = Integer.parseInt(datos[5]);
                         String descripcion = datos[6];
 
                         Evento evento = new Evento(
-                            id,
-                            nombre,
-                            categoria,
-                            fechaHora,
-                            lugar,
-                            capacidad,
-                            descripcion
+                            id, nombre, categoria, fechaHora,
+                            lugar, capacidad, descripcion
                         );
 
                         eventos.add(evento);
 
                     } catch (NumberFormatException e) {
 
-                        System.out.println("Error en los números de una línea.");
+                        System.out.println("Error en los números de un evento.");
 
                     } catch (java.time.format.DateTimeParseException e) {
 
                         System.out.println("Error en la fecha de un evento.");
-
                     }
+
+                } else {
+
+                    System.out.println("Una línea de eventos tiene datos incorrectos.");
                 }
             }
         }
 
         return eventos;
     }
-
-    // Evitar que los datos dañen la separación del archivo
 
     private static String limpiarTexto(String texto) {
 

@@ -1,3 +1,2 @@
-1|fiesta de halloween |Social|2026-12-31T23:00|laureles|30|una fiesta de halloween
-2|boda de cuello y yuliana|Social|2026-10-31T15:00|italia|150|el gran dia que cuello toda la vida ha estado esperando 
-3|fiesta|Social|2026-11-28T11:00|ccoooooooo|56|asdfghjkjhgwasdfgh
+1|Copa Universitaria de Futbol 2026|Deportivo|2026-11-22T08:00|Cancha deportiva UPB|2|Torneo universitario de futbol.
+2|centro de rehabilitacion para ser amiguis |Social|2026-11-28T00:00|upb|2|una pequeña reunon para las lokas ajaja

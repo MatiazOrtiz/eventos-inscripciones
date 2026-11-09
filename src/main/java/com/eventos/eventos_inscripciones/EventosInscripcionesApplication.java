@@ -1,3 +1,4 @@
+
 package com.eventos.eventos_inscripciones;
 
 import org.springframework.boot.SpringApplication;
@@ -7,6 +8,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class EventosInscripcionesApplication {
 
     public static void main(String[] args) {
+
+        DatosIniciales.inicializar();
+
         SpringApplication.run(EventosInscripcionesApplication.class, args);
 
         try {

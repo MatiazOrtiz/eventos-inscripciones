@@ -1,4 +1,3 @@
-
 package com.eventos.eventos_inscripciones;
 
 import java.io.IOException;
@@ -15,7 +14,8 @@ import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
+import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
@@ -35,6 +35,8 @@ public class ActividadesView extends VerticalLayout {
 
         addClassName("eventos-pagina");
 
+        // Cargar datos
+
         try {
 
             actividades = ArchivoActividades.cargarActividades();
@@ -52,6 +54,8 @@ public class ActividadesView extends VerticalLayout {
             Notification.show("Error al cargar los datos.");
         }
 
+        // Encabezado
+
         H2 titulo = new H2("Gestión de actividades");
 
         Paragraph subtitulo = new Paragraph(
@@ -65,6 +69,7 @@ public class ActividadesView extends VerticalLayout {
 
         TextArea descripcion = new TextArea("Descripción");
         descripcion.setWidthFull();
+        descripcion.setMinHeight("90px");
 
         ComboBox<Evento> evento = new ComboBox<>("Evento asociado");
         evento.setItems(eventos);
@@ -76,6 +81,32 @@ public class ActividadesView extends VerticalLayout {
 
         DateTimePicker fechaFin = new DateTimePicker("Fecha y hora de finalización");
         fechaFin.setWidthFull();
+
+        // Filas adaptables
+
+        FlexLayout fila1 = new FlexLayout(nombre, evento);
+        fila1.setWidthFull();
+        fila1.setFlexWrap(FlexLayout.FlexWrap.WRAP);
+        fila1.setAlignItems(FlexComponent.Alignment.CENTER);
+        fila1.addClassName("fila-responsive");
+
+        nombre.setMinWidth("220px");
+        evento.setMinWidth("220px");
+
+        fila1.setFlexGrow(1, nombre, evento);
+
+        FlexLayout fila2 = new FlexLayout(fechaInicio, fechaFin);
+        fila2.setWidthFull();
+        fila2.setFlexWrap(FlexLayout.FlexWrap.WRAP);
+        fila2.setAlignItems(FlexComponent.Alignment.CENTER);
+        fila2.addClassName("fila-responsive");
+
+        fechaInicio.setMinWidth("220px");
+        fechaFin.setMinWidth("220px");
+
+        fila2.setFlexGrow(1, fechaInicio, fechaFin);
+
+        // Botones
 
         Button guardar = new Button("Registrar actividad");
         guardar.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
@@ -93,23 +124,30 @@ public class ActividadesView extends VerticalLayout {
         cancelar.setEnabled(false);
         eliminar.setEnabled(false);
 
-        HorizontalLayout botones = new HorizontalLayout(
+        FlexLayout botones = new FlexLayout(
             editar, actualizar, cancelar, eliminar
         );
+
+        botones.setWidthFull();
+        botones.setFlexWrap(FlexLayout.FlexWrap.WRAP);
+        botones.addClassName("botones-edicion");
+
+        // Tarjeta del formulario
 
         VerticalLayout formulario = new VerticalLayout(
             new H2("Registrar actividad"),
             nombre,
             descripcion,
-            evento,
-            fechaInicio,
-            fechaFin,
+            fila1,
+            fila2,
             guardar,
             botones
         );
 
         formulario.addClassName("tarjeta-eventos");
         formulario.setWidthFull();
+        formulario.setPadding(true);
+        formulario.setSpacing(true);
 
         // Tabla
 
@@ -124,6 +162,7 @@ public class ActividadesView extends VerticalLayout {
 
         tarjetaTabla.addClassName("tarjeta-eventos");
         tarjetaTabla.setWidthFull();
+        tarjetaTabla.setPadding(true);
 
         // Registrar actividad
 
@@ -349,6 +388,8 @@ public class ActividadesView extends VerticalLayout {
             confirmacion.open();
         });
 
+        // Agregar componentes
+
         add(titulo, subtitulo, formulario, tarjetaTabla);
 
         setWidthFull();
@@ -389,6 +430,7 @@ public class ActividadesView extends VerticalLayout {
 
         tabla.setAllRowsVisible(true);
         tabla.setWidthFull();
+        tabla.setMinWidth("700px");
     }
 
     // Comprobar horarios superpuestos

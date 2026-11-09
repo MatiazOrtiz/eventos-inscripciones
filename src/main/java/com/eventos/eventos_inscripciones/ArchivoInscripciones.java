@@ -2,11 +2,10 @@
 package com.eventos.eventos_inscripciones;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,22 +16,24 @@ public class ArchivoInscripciones {
     public static void guardarInscripciones(List<Inscripcion> inscripciones)
             throws IOException {
 
-        File archivo = new File(RUTA);
+        Path ruta = Path.of(RUTA);
 
-        archivo.getParentFile().mkdirs();
+        Files.createDirectories(ruta.getParent());
 
-        try (PrintWriter escritor = new PrintWriter(new FileWriter(archivo))) {
+        try (BufferedWriter escritor = Files.newBufferedWriter(ruta)) {
 
             for (Inscripcion inscripcion : inscripciones) {
 
-                escritor.println(
+                escritor.write(
                     inscripcion.getId() + "|" +
                     inscripcion.getIdEvento() + "|" +
-                    inscripcion.getNombre().replace("|", "/") + "|" +
-                    inscripcion.getDocumento().replace("|", "/") + "|" +
-                    inscripcion.getCorreo().replace("|", "/") + "|" +
-                    inscripcion.getEstado()
+                    limpiarTexto(inscripcion.getNombre()) + "|" +
+                    limpiarTexto(inscripcion.getDocumento()) + "|" +
+                    limpiarTexto(inscripcion.getCorreo()) + "|" +
+                    limpiarTexto(inscripcion.getEstado())
                 );
+
+                escritor.newLine();
             }
         }
     }
@@ -42,13 +43,13 @@ public class ArchivoInscripciones {
 
         List<Inscripcion> inscripciones = new ArrayList<>();
 
-        File archivo = new File(RUTA);
+        Path ruta = Path.of(RUTA);
 
-        if (!archivo.exists()) {
+        if (!Files.exists(ruta)) {
             return inscripciones;
         }
 
-        try (BufferedReader lector = new BufferedReader(new FileReader(archivo))) {
+        try (BufferedReader lector = Files.newBufferedReader(ruta)) {
 
             String linea;
 
@@ -58,20 +59,52 @@ public class ArchivoInscripciones {
 
                 if (datos.length == 6) {
 
-                    Inscripcion inscripcion = new Inscripcion(
-                        Integer.parseInt(datos[0]),
-                        Integer.parseInt(datos[1]),
-                        datos[2],
-                        datos[3],
-                        datos[4],
-                        datos[5]
-                    );
+                    try {
 
-                    inscripciones.add(inscripcion);
+                        int id = Integer.parseInt(datos[0]);
+                        int idEvento = Integer.parseInt(datos[1]);
+
+                        String nombre = datos[2];
+                        String documento = datos[3];
+                        String correo = datos[4];
+                        String estado = datos[5];
+
+                        Inscripcion inscripcion = new Inscripcion(
+                            id,
+                            idEvento,
+                            nombre,
+                            documento,
+                            correo,
+                            estado
+                        );
+
+                        inscripciones.add(inscripcion);
+
+                    } catch (NumberFormatException e) {
+
+                        System.out.println("Error en los números de una inscripción.");
+
+                    }
+
+                } else {
+
+                    System.out.println("Una línea de inscripciones tiene datos incorrectos.");
                 }
             }
         }
 
         return inscripciones;
     }
+
+    private static String limpiarTexto(String texto) {
+
+        if (texto == null) {
+            return "";
+        }
+
+        return texto.replace("|", "/")
+                    .replace("\n", " ")
+                    .replace("\r", " ");
+    }
 }
+    

@@ -1,4 +1,3 @@
-
 package com.eventos.eventos_inscripciones;
 
 import java.io.IOException;
@@ -14,7 +13,7 @@ import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.TextField;
@@ -34,6 +33,8 @@ public class InscripcionesView extends VerticalLayout {
 
         addClassName("eventos-pagina");
 
+        // Cargar datos
+
         try {
 
             eventos = ArchivoEventos.cargarEventos();
@@ -50,6 +51,8 @@ public class InscripcionesView extends VerticalLayout {
 
             Notification.show("Error al cargar los datos.");
         }
+
+        // Encabezado
 
         H2 titulo = new H2("Gestión de inscripciones");
 
@@ -75,6 +78,7 @@ public class InscripcionesView extends VerticalLayout {
 
         Button guardar = new Button("Registrar inscripción");
         guardar.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        guardar.setWidthFull();
 
         VerticalLayout formulario = new VerticalLayout(
             new H2("Registrar participante"),
@@ -87,6 +91,8 @@ public class InscripcionesView extends VerticalLayout {
 
         formulario.addClassName("tarjeta-eventos");
         formulario.setWidthFull();
+        formulario.setPadding(true);
+        formulario.setSpacing(true);
 
         // Tabla
 
@@ -101,14 +107,20 @@ public class InscripcionesView extends VerticalLayout {
             cancelarInscripcion.setEnabled(e.getValue() != null);
         });
 
+        FlexLayout botonesTabla = new FlexLayout(cancelarInscripcion);
+        botonesTabla.setWidthFull();
+        botonesTabla.setFlexWrap(FlexLayout.FlexWrap.WRAP);
+        botonesTabla.addClassName("botones-edicion");
+
         VerticalLayout tarjetaTabla = new VerticalLayout(
             new H2("Participantes inscritos"),
             tabla,
-            cancelarInscripcion
+            botonesTabla
         );
 
         tarjetaTabla.addClassName("tarjeta-eventos");
         tarjetaTabla.setWidthFull();
+        tarjetaTabla.setPadding(true);
 
         // Registrar inscripción
 
@@ -124,8 +136,11 @@ public class InscripcionesView extends VerticalLayout {
             }
 
             if (!correo.isInvalid() && !correo.getValue().isBlank()) {
+
                 // El correo tiene un formato válido.
+
             } else {
+
                 Notification.show("Escribe un correo electrónico válido.");
                 return;
             }
@@ -212,8 +227,6 @@ public class InscripcionesView extends VerticalLayout {
 
             confirmacion.addConfirmListener(eventoConfirmacion -> {
 
-                int posicion = inscripciones.indexOf(seleccionada);
-
                 inscripciones.remove(seleccionada);
 
                 promocionarParticipante(seleccionada.getIdEvento());
@@ -237,6 +250,8 @@ public class InscripcionesView extends VerticalLayout {
             confirmacion.open();
         });
 
+        // Agregar componentes
+
         add(titulo, subtitulo, formulario, tarjetaTabla);
 
         setWidthFull();
@@ -251,19 +266,24 @@ public class InscripcionesView extends VerticalLayout {
     private void configurarTabla() {
 
         tabla.addColumn(Inscripcion::getId)
-                .setHeader("ID");
+                .setHeader("ID")
+                .setAutoWidth(true);
 
         tabla.addColumn(Inscripcion::getIdEvento)
-                .setHeader("ID Evento");
+                .setHeader("ID Evento")
+                .setAutoWidth(true);
 
         tabla.addColumn(Inscripcion::getNombre)
-                .setHeader("Participante");
+                .setHeader("Participante")
+                .setAutoWidth(true);
 
         tabla.addColumn(Inscripcion::getDocumento)
-                .setHeader("Documento");
+                .setHeader("Documento")
+                .setAutoWidth(true);
 
         tabla.addColumn(Inscripcion::getCorreo)
-                .setHeader("Correo");
+                .setHeader("Correo")
+                .setAutoWidth(true);
 
         tabla.addComponentColumn(inscripcion -> {
 
@@ -289,9 +309,10 @@ public class InscripcionesView extends VerticalLayout {
 
             return etiqueta;
 
-        }).setHeader("Estado");
+        }).setHeader("Estado").setAutoWidth(true);
 
         tabla.setWidthFull();
+        tabla.setMinWidth("650px");
         tabla.setAllRowsVisible(true);
     }
 

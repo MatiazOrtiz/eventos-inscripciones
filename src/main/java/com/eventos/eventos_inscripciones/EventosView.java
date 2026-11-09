@@ -1,15 +1,16 @@
-
 package com.eventos.eventos_inscripciones;
 
+import java.io.IOException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.io.IOException;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
+import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.datetimepicker.DateTimePicker;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
@@ -18,7 +19,7 @@ import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.progressbar.ProgressBar;
 import com.vaadin.flow.component.textfield.IntegerField;
@@ -130,11 +131,12 @@ public class EventosView extends VerticalLayout {
         cancelar.setEnabled(false);
         eliminar.setEnabled(false);
 
-        HorizontalLayout botonesEdicion = new HorizontalLayout(
+        FlexLayout botonesEdicion = new FlexLayout(
             editar, actualizar, cancelar, eliminar
         );
 
         botonesEdicion.setWidthFull();
+        botonesEdicion.setFlexWrap(FlexLayout.FlexWrap.WRAP);
         botonesEdicion.addClassName("botones-edicion");
 
         // Tarjeta del formulario
@@ -147,20 +149,38 @@ public class EventosView extends VerticalLayout {
         );
         ayudaFormulario.addClassName("texto-ayuda");
 
-        HorizontalLayout fila1 = new HorizontalLayout(nombre, categoria);
+        FlexLayout fila1 = new FlexLayout(nombre, categoria);
         fila1.setWidthFull();
-        fila1.setFlexGrow(1, nombre);
-        fila1.setFlexGrow(1, categoria);
+        fila1.setFlexWrap(FlexLayout.FlexWrap.WRAP);
+        fila1.setAlignItems(FlexComponent.Alignment.CENTER);
+        fila1.addClassName("fila-responsive");
 
-        HorizontalLayout fila2 = new HorizontalLayout(fechaHora, lugar);
+        nombre.setMinWidth("220px");
+        categoria.setMinWidth("220px");
+
+        fila1.setFlexGrow(1, nombre, categoria);
+
+        FlexLayout fila2 = new FlexLayout(fechaHora, lugar);
         fila2.setWidthFull();
-        fila2.setFlexGrow(1, fechaHora);
-        fila2.setFlexGrow(1, lugar);
+        fila2.setFlexWrap(FlexLayout.FlexWrap.WRAP);
+        fila2.setAlignItems(FlexComponent.Alignment.CENTER);
+        fila2.addClassName("fila-responsive");
 
-        HorizontalLayout fila3 = new HorizontalLayout(capacidad, descripcion);
+        fechaHora.setMinWidth("220px");
+        lugar.setMinWidth("220px");
+
+        fila2.setFlexGrow(1, fechaHora, lugar);
+
+        FlexLayout fila3 = new FlexLayout(capacidad, descripcion);
         fila3.setWidthFull();
-        fila3.setFlexGrow(1, capacidad);
-        fila3.setFlexGrow(2, descripcion);
+        fila3.setFlexWrap(FlexLayout.FlexWrap.WRAP);
+        fila3.setAlignItems(FlexComponent.Alignment.CENTER);
+        fila3.addClassName("fila-responsive");
+
+        capacidad.setMinWidth("180px");
+        descripcion.setMinWidth("220px");
+
+        fila3.setFlexGrow(1, capacidad, descripcion);
 
         VerticalLayout tarjetaFormulario = new VerticalLayout(
             tituloFormulario,
@@ -200,7 +220,7 @@ public class EventosView extends VerticalLayout {
         tarjetaRegistrados.setWidthFull();
         tarjetaRegistrados.setPadding(true);
 
-        // Búsqueda
+        // Búsqueda y filtros
 
         TextField buscarNombre = new TextField("Nombre del evento");
         buscarNombre.setPlaceholder("Escribe el nombre...");
@@ -219,22 +239,36 @@ public class EventosView extends VerticalLayout {
         filtroCategoria.setClearButtonVisible(true);
         filtroCategoria.setWidthFull();
 
+        DatePicker filtroFecha = new DatePicker("Fecha del evento");
+        filtroFecha.setPlaceholder("Selecciona una fecha");
+        filtroFecha.setClearButtonVisible(true);
+        filtroFecha.setWidthFull();
+
         Button buscarEventos = new Button("Buscar");
         buscarEventos.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
         Button mostrarTodos = new Button("Mostrar todos");
 
-        HorizontalLayout filaBusqueda = new HorizontalLayout(
+        FlexLayout filaBusqueda = new FlexLayout(
             buscarNombre,
             filtroCategoria,
+            filtroFecha,
             buscarEventos,
             mostrarTodos
         );
 
         filaBusqueda.setWidthFull();
+        filaBusqueda.setFlexWrap(FlexLayout.FlexWrap.WRAP);
         filaBusqueda.setAlignItems(FlexComponent.Alignment.END);
-        filaBusqueda.setFlexGrow(1, buscarNombre);
-        filaBusqueda.setFlexGrow(1, filtroCategoria);
+        filaBusqueda.addClassName("fila-responsive");
+
+        buscarNombre.setMinWidth("180px");
+        filtroCategoria.setMinWidth("180px");
+        filtroFecha.setMinWidth("180px");
+
+        filaBusqueda.setFlexGrow(1,
+            buscarNombre, filtroCategoria, filtroFecha
+        );
 
         // Tabla de resultados
 
@@ -246,7 +280,7 @@ public class EventosView extends VerticalLayout {
         VerticalLayout tarjetaBusqueda = new VerticalLayout(
             new H2("Buscar eventos"),
             new Paragraph(
-                "Filtra los eventos por su nombre o categoría."
+                "Filtra los eventos por nombre, categoría o fecha."
             ),
             filaBusqueda,
             tituloResultados,
@@ -305,7 +339,9 @@ public class EventosView extends VerticalLayout {
             tablaRegistrados.setItems(new ArrayList<>(eventos));
 
             if (busquedaRealizada) {
-                actualizarResultados(buscarNombre, filtroCategoria);
+                actualizarResultados(
+                    buscarNombre, filtroCategoria, filtroFecha
+                );
             }
 
             limpiarFormulario(
@@ -413,7 +449,9 @@ public class EventosView extends VerticalLayout {
             tablaRegistrados.setItems(new ArrayList<>(eventos));
 
             if (busquedaRealizada) {
-                actualizarResultados(buscarNombre, filtroCategoria);
+                actualizarResultados(
+                    buscarNombre, filtroCategoria, filtroFecha
+                );
             }
 
             limpiarFormulario(
@@ -492,7 +530,9 @@ public class EventosView extends VerticalLayout {
                 tablaRegistrados.setItems(new ArrayList<>(eventos));
 
                 if (busquedaRealizada) {
-                    actualizarResultados(buscarNombre, filtroCategoria);
+                    actualizarResultados(
+                        buscarNombre, filtroCategoria, filtroFecha
+                    );
                 }
 
                 tablaRegistrados.asSingleSelect().clear();
@@ -509,7 +549,9 @@ public class EventosView extends VerticalLayout {
 
             busquedaRealizada = true;
 
-            actualizarResultados(buscarNombre, filtroCategoria);
+            actualizarResultados(
+                buscarNombre, filtroCategoria, filtroFecha
+            );
 
             if (tablaResultados.getListDataView().getItemCount() == 0) {
                 Notification.show("No se encontraron eventos.");
@@ -524,6 +566,7 @@ public class EventosView extends VerticalLayout {
 
             buscarNombre.clear();
             filtroCategoria.clear();
+            filtroFecha.clear();
 
             busquedaRealizada = true;
 
@@ -656,6 +699,7 @@ public class EventosView extends VerticalLayout {
 
         tabla.setAllRowsVisible(true);
         tabla.setWidthFull();
+        tabla.setMinWidth("700px");
     }
 
     // Contar participantes inscritos en un evento
@@ -680,12 +724,14 @@ public class EventosView extends VerticalLayout {
 
     private void actualizarResultados(
             TextField buscarNombre,
-            ComboBox<String> filtroCategoria) {
+            ComboBox<String> filtroCategoria,
+            DatePicker filtroFecha) {
 
         String texto = buscarNombre.getValue()
                 .trim().toLowerCase(Locale.ROOT);
 
         String categoriaSeleccionada = filtroCategoria.getValue();
+        LocalDate fechaSeleccionada = filtroFecha.getValue();
 
         List<Evento> resultados = new ArrayList<>();
 
@@ -697,7 +743,10 @@ public class EventosView extends VerticalLayout {
             boolean coincideCategoria = categoriaSeleccionada == null
                     || evento.getCategoria().equals(categoriaSeleccionada);
 
-            if (coincideNombre && coincideCategoria) {
+            boolean coincideFecha = fechaSeleccionada == null
+                    || evento.getFechaHora().toLocalDate().equals(fechaSeleccionada);
+
+            if (coincideNombre && coincideCategoria && coincideFecha) {
                 resultados.add(evento);
             }
         }

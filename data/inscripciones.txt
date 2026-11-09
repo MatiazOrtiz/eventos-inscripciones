@@ -1,0 +1,4 @@
+1|1|Juan David Martinez|3001001|juan@gmail.com|Inscrito
+3|1|Nicolas Gomez|3001003|nicolas@gmail.com|Inscrito
+4|2|kante|0000302|kante@gmail.com|Inscrito
+6|2|opaopa|2343234|opa@gmail.com|Inscrito

@@ -1,7 +1,11 @@
 
 package com.eventos.eventos_inscripciones;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,57 +13,85 @@ public class ArchivoAsistencias {
 
     private static final String RUTA = "data/asistencias.txt";
 
-    public static void guardarAsistencias(List<Asistencia> asistencias) throws IOException {
+    public static void guardarAsistencias(List<Asistencia> asistencias)
+            throws IOException {
 
-        File carpeta = new File("data");
-        carpeta.mkdirs();
+        Path ruta = Path.of(RUTA);
 
-        PrintWriter escritor = new PrintWriter(new FileWriter(RUTA));
+        Files.createDirectories(ruta.getParent());
 
-        for (Asistencia asistencia : asistencias) {
+        try (BufferedWriter escritor = Files.newBufferedWriter(ruta)) {
 
-            escritor.println(
-                asistencia.getId() + "|" +
-                asistencia.getIdActividad() + "|" +
-                asistencia.getIdInscripcion() + "|" +
-                asistencia.isAsistio()
-            );
+            for (Asistencia asistencia : asistencias) {
+
+                escritor.write(
+                    asistencia.getId() + "|" +
+                    asistencia.getIdActividad() + "|" +
+                    asistencia.getIdInscripcion() + "|" +
+                    asistencia.isAsistio()
+                );
+
+                escritor.newLine();
+            }
         }
-
-        escritor.close();
     }
 
-    public static List<Asistencia> cargarAsistencias() throws IOException {
+    public static List<Asistencia> cargarAsistencias()
+            throws IOException {
 
         List<Asistencia> asistencias = new ArrayList<>();
 
-        File archivo = new File(RUTA);
+        Path ruta = Path.of(RUTA);
 
-        if (!archivo.exists()) {
+        if (!Files.exists(ruta)) {
             return asistencias;
         }
 
-        BufferedReader lector = new BufferedReader(new FileReader(RUTA));
+        try (BufferedReader lector = Files.newBufferedReader(ruta)) {
 
-        String linea;
+            String linea;
 
-        while ((linea = lector.readLine()) != null) {
+            while ((linea = lector.readLine()) != null) {
 
-            String[] datos = linea.split("\\|");
+                String[] datos = linea.split("\\|", -1);
 
-            int id = Integer.parseInt(datos[0]);
-            int idActividad = Integer.parseInt(datos[1]);
-            int idInscripcion = Integer.parseInt(datos[2]);
-            boolean asistio = Boolean.parseBoolean(datos[3]);
+                if (datos.length == 4) {
 
-            Asistencia asistencia = new Asistencia(
-                id, idActividad, idInscripcion, asistio
-            );
+                    try {
 
-            asistencias.add(asistencia);
+                        int id = Integer.parseInt(datos[0]);
+                        int idActividad = Integer.parseInt(datos[1]);
+                        int idInscripcion = Integer.parseInt(datos[2]);
+
+                        if (!datos[3].equals("true") &&
+                            !datos[3].equals("false")) {
+
+                            System.out.println("Estado de asistencia incorrecto.");
+                            continue;
+                        }
+
+                        boolean asistio = Boolean.parseBoolean(datos[3]);
+
+                        Asistencia asistencia = new Asistencia(
+                            id,
+                            idActividad,
+                            idInscripcion,
+                            asistio
+                        );
+
+                        asistencias.add(asistencia);
+
+                    } catch (NumberFormatException e) {
+
+                        System.out.println("Error en los números de una asistencia.");
+                    }
+
+                } else {
+
+                    System.out.println("Una línea de asistencias tiene datos incorrectos.");
+                }
+            }
         }
-
-        lector.close();
 
         return asistencias;
     }

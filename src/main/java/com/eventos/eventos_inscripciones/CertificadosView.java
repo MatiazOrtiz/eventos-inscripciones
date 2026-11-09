@@ -6,7 +6,7 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.notification.Notification;
@@ -43,7 +43,9 @@ public class CertificadosView extends VerticalLayout {
 
     public CertificadosView() {
 
-        setSizeFull();
+        setWidthFull();
+        setMaxWidth("1500px");
+        getStyle().set("margin", "0 auto");
         setPadding(true);
         setSpacing(true);
 
@@ -58,7 +60,8 @@ public class CertificadosView extends VerticalLayout {
 
             comboEvento.setItems(eventos);
             comboEvento.setItemLabelGenerator(Evento::getNombre);
-            comboEvento.setWidth("350px");
+            comboEvento.setWidthFull();
+            comboEvento.setMinWidth("220px");
 
             configurarTabla();
 
@@ -93,14 +96,29 @@ public class CertificadosView extends VerticalLayout {
             enlaceDescarga.setVisible(false);
             enlaceDescarga.getElement().setAttribute("download", true);
 
-            HorizontalLayout botones = new HorizontalLayout(
+            FlexLayout botones = new FlexLayout(
                     botonCertificado,
                     enlaceDescarga
             );
 
+            botones.setWidthFull();
+            botones.setFlexWrap(FlexLayout.FlexWrap.WRAP);
             botones.setAlignItems(FlexComponent.Alignment.CENTER);
+            botones.getStyle().set("gap", "12px");
 
-            add(titulo, comboEvento, mensaje, tabla, botones);
+            VerticalLayout tarjeta = new VerticalLayout(
+                    comboEvento,
+                    mensaje,
+                    tabla,
+                    botones
+            );
+
+            tarjeta.setWidthFull();
+            tarjeta.setPadding(true);
+            tarjeta.setSpacing(true);
+            tarjeta.addClassName("tarjeta-eventos");
+
+            add(titulo, tarjeta);
 
         } catch (IOException e) {
 
@@ -138,6 +156,7 @@ public class CertificadosView extends VerticalLayout {
                 .setAutoWidth(true);
 
         tabla.setWidthFull();
+        tabla.setMinWidth("650px");
         tabla.setAllRowsVisible(true);
 
         tabla.asSingleSelect().addValueChangeListener(evento -> {
@@ -321,12 +340,12 @@ public class CertificadosView extends VerticalLayout {
                 </body>
                 </html>
                 """.formatted(
-                    escapar(participante.getNombre()),
-                    escapar(evento.getNombre()),
-                    fecha,
-                    escapar(evento.getLugar()),
-                    porcentaje
-                );
+                escapar(participante.getNombre()),
+                escapar(evento.getNombre()),
+                fecha,
+                escapar(evento.getLugar()),
+                porcentaje
+        );
 
         String nombreArchivo = "Certificado_"
                 + participante.getDocumento() + ".html";

@@ -1,4 +1,3 @@
-
 package com.eventos.eventos_inscripciones;
 
 import com.vaadin.flow.component.button.Button;
@@ -7,8 +6,11 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
+import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.router.Route;
 
 import java.io.IOException;
@@ -38,16 +40,31 @@ public class AsistenciasView extends VerticalLayout {
 
     public AsistenciasView() {
 
-        setSizeFull();
+        addClassName("eventos-pagina");
+
+        setWidthFull();
+        setMaxWidth("1500px");
+        getStyle().set("margin", "0 auto");
         setPadding(true);
         setSpacing(true);
 
         cargarDatos();
 
-        eventoCombo.setItemLabelGenerator(Evento::getNombre);
-        actividadCombo.setItemLabelGenerator(Actividad::getNombre);
+        // Configurar selectores
 
-        participantesGrupo.setLabel("Selecciona los participantes que asistieron");
+        eventoCombo.setItemLabelGenerator(Evento::getNombre);
+        eventoCombo.setWidthFull();
+        eventoCombo.setMinWidth("220px");
+
+        actividadCombo.setItemLabelGenerator(Actividad::getNombre);
+        actividadCombo.setWidthFull();
+        actividadCombo.setMinWidth("220px");
+
+        participantesGrupo.setLabel(
+                "Selecciona los participantes que asistieron"
+        );
+
+        participantesGrupo.setWidthFull();
 
         participantesGrupo.setItemLabelGenerator(
                 inscripcion -> inscripcion.getNombre()
@@ -55,6 +72,8 @@ public class AsistenciasView extends VerticalLayout {
         );
 
         eventoCombo.setItems(eventos);
+
+        // Seleccionar evento
 
         eventoCombo.addValueChangeListener(event -> {
 
@@ -79,6 +98,8 @@ public class AsistenciasView extends VerticalLayout {
             }
         });
 
+        // Seleccionar actividad
+
         actividadCombo.addValueChangeListener(event -> {
 
             cargarParticipantesActividad(event.getValue());
@@ -89,23 +110,61 @@ public class AsistenciasView extends VerticalLayout {
 
         cancelarButton.addClickListener(event -> limpiarFormulario());
 
-        configurarTabla();
+        // Botones adaptables
 
-        HorizontalLayout botones = new HorizontalLayout(
+        guardarButton.addThemeName("primary");
+        guardarButton.setWidthFull();
+
+        cancelarButton.setWidthFull();
+
+        FlexLayout botones = new FlexLayout(
                 guardarButton,
                 cancelarButton
         );
 
-        add(
+        botones.setWidthFull();
+        botones.setFlexWrap(FlexLayout.FlexWrap.WRAP);
+        botones.addClassName("botones-edicion");
+
+        // Formulario
+
+        VerticalLayout formulario = new VerticalLayout(
+                new H2("Registrar asistencia"),
+                new Paragraph(
+                        "Selecciona un evento, una actividad y marca los participantes que asistieron."
+                ),
                 eventoCombo,
                 actividadCombo,
                 participantesGrupo,
-                botones,
+                botones
+        );
+
+        formulario.addClassName("tarjeta-eventos");
+        formulario.setWidthFull();
+        formulario.setPadding(true);
+        formulario.setSpacing(true);
+
+        // Configurar tabla
+
+        configurarTabla();
+
+        VerticalLayout tarjetaTabla = new VerticalLayout(
+                new H2("Registros de asistencia"),
                 tabla
         );
 
+        tarjetaTabla.addClassName("tarjeta-eventos");
+        tarjetaTabla.setWidthFull();
+        tarjetaTabla.setPadding(true);
+
+        // Agregar componentes
+
+        add(formulario, tarjetaTabla);
+
         actualizarTabla();
     }
+
+    // Cargar datos
 
     private void cargarDatos() {
 
@@ -121,6 +180,8 @@ public class AsistenciasView extends VerticalLayout {
             Notification.show("Error al cargar los datos");
         }
     }
+
+    // Cargar participantes de una actividad
 
     private void cargarParticipantesActividad(Actividad actividad) {
 
@@ -162,6 +223,8 @@ public class AsistenciasView extends VerticalLayout {
 
         participantesGrupo.setValue(presentes);
     }
+
+    // Guardar asistencias
 
     private void guardarAsistencias() {
 
@@ -256,22 +319,25 @@ public class AsistenciasView extends VerticalLayout {
         }
     }
 
+    // Configurar tabla
+
     private void configurarTabla() {
 
         tabla.addColumn(Asistencia::getId)
-                .setHeader("ID");
+                .setHeader("ID")
+                .setAutoWidth(true);
 
         tabla.addColumn(asistencia ->
                 buscarNombreActividad(asistencia.getIdActividad())
-        ).setHeader("Actividad");
+        ).setHeader("Actividad").setAutoWidth(true);
 
         tabla.addColumn(asistencia ->
                 buscarNombreParticipante(asistencia.getIdInscripcion())
-        ).setHeader("Participante");
+        ).setHeader("Participante").setAutoWidth(true);
 
         tabla.addColumn(asistencia ->
                 asistencia.isAsistio() ? "Asistió" : "No asistió"
-        ).setHeader("Estado");
+        ).setHeader("Estado").setAutoWidth(true);
 
         tabla.addComponentColumn(asistencia -> {
 
@@ -281,21 +347,26 @@ public class AsistenciasView extends VerticalLayout {
 
             return editar;
 
-        }).setHeader("Acciones");
+        }).setHeader("Acciones").setAutoWidth(true);
 
         tabla.addComponentColumn(asistencia -> {
 
             Button eliminar = new Button("Eliminar");
 
+            eliminar.addThemeVariants(com.vaadin.flow.component.button.ButtonVariant.LUMO_ERROR);
+
             eliminar.addClickListener(event -> confirmarEliminacion(asistencia));
 
             return eliminar;
 
-        }).setHeader("Eliminar");
+        }).setHeader("Eliminar").setAutoWidth(true);
 
         tabla.setWidthFull();
+        tabla.setMinWidth("600px");
         tabla.setAllRowsVisible(true);
     }
+
+    // Buscar nombre de actividad
 
     private String buscarNombreActividad(int id) {
 
@@ -309,6 +380,8 @@ public class AsistenciasView extends VerticalLayout {
         return "Actividad no encontrada";
     }
 
+    // Buscar nombre de participante
+
     private String buscarNombreParticipante(int id) {
 
         for (Inscripcion inscripcion : inscripciones) {
@@ -320,6 +393,8 @@ public class AsistenciasView extends VerticalLayout {
 
         return "Participante no encontrado";
     }
+
+    // Editar asistencia
 
     private void editarAsistencia(Asistencia asistencia) {
 
@@ -356,6 +431,8 @@ public class AsistenciasView extends VerticalLayout {
         }
     }
 
+    // Confirmar eliminación
+
     private void confirmarEliminacion(Asistencia asistencia) {
 
         ConfirmDialog dialogo = new ConfirmDialog();
@@ -365,6 +442,7 @@ public class AsistenciasView extends VerticalLayout {
         dialogo.setCancelable(true);
         dialogo.setCancelText("Cancelar");
         dialogo.setConfirmText("Eliminar");
+        dialogo.setConfirmButtonTheme("error primary");
 
         dialogo.addConfirmListener(event -> {
 
@@ -393,6 +471,8 @@ public class AsistenciasView extends VerticalLayout {
         dialogo.open();
     }
 
+    // Limpiar formulario
+
     private void limpiarFormulario() {
 
         eventoCombo.clear();
@@ -402,8 +482,10 @@ public class AsistenciasView extends VerticalLayout {
         guardarButton.setText("Guardar asistencias");
     }
 
+    // Actualizar tabla
+
     private void actualizarTabla() {
 
-        tabla.setItems(asistencias);
+        tabla.setItems(new ArrayList<>(asistencias));
     }
 }

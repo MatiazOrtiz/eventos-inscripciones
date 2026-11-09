@@ -2,46 +2,30 @@
 package com.eventos.eventos_inscripciones;
 
 import com.vaadin.flow.component.applayout.AppLayout;
-import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.html.H1;
-import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.router.RouterLink;
+import com.vaadin.flow.component.sidenav.SideNav;
+import com.vaadin.flow.component.sidenav.SideNavItem;
 
 public class MainLayout extends AppLayout {
 
     public MainLayout() {
-        H1 titulo = new H1("Eventos e Inscripciones");
-        titulo.getStyle().set("font-size", "20px");
-        titulo.getStyle().set("margin", "0");
 
-        HorizontalLayout encabezado = new HorizontalLayout(
-            new DrawerToggle(), titulo
-        );
+        H1 titulo = new H1("Gestión de Eventos");
 
-        encabezado.setAlignItems(
-            HorizontalLayout.Alignment.CENTER
-        );
+        SideNav menu = new SideNav();
 
-        addToNavbar(encabezado);
+        menu.addItem(new SideNavItem("Eventos", EventosView.class));
+        menu.addItem(new SideNavItem("Actividades", ActividadesView.class));
+        menu.addItem(new SideNavItem("Inscripciones", InscripcionesView.class));
+        menu.addItem(new SideNavItem("Asistencias", AsistenciasView.class));
 
-        RouterLink inicio = new RouterLink("Inicio", InicioView.class);
-        RouterLink eventos = new RouterLink("Eventos", EventosView.class);
-        RouterLink actividades = new RouterLink("Actividades", ActividadesView.class);
-        RouterLink inscripciones = new RouterLink("Inscripciones", InscripcionesView.class);
+        VerticalLayout contenido = new VerticalLayout(titulo, menu);
 
-        VerticalLayout menu = new VerticalLayout(
-            new Span("MENÚ PRINCIPAL"),
-            inicio,
-            eventos,
-            actividades,
-            inscripciones
-        );
+        contenido.setPadding(true);
+        contenido.setSpacing(true);
 
-        menu.setPadding(true);
-        menu.setSpacing(true);
-
+        addToNavbar(titulo);
         addToDrawer(menu);
     }
 }
